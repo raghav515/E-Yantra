@@ -64,13 +64,13 @@ def detect_traffic_signals(maze_image):
 	traffic_signals = []
 
 	##############	ADD YOUR CODE HERE	##############
-	
+
 	mono = cv2.cvtColor(maze_image, cv2.COLOR_BGR2GRAY)
 	for i in range(0,7):
 		for j in range(0,7):
 			if mono[100+(j*100)][100+(i*100)] == 76:
 				traffic_signals.append(chr(65+i)+chr(49+j))
-
+	
 	##################################################
 	
 	return traffic_signals
@@ -100,13 +100,13 @@ def detect_horizontal_roads_under_construction(maze_image):
 	horizontal_roads_under_construction = []
 
 	##############	ADD YOUR CODE HERE	##############
-	
+
 	mono = cv2.cvtColor(maze_image, cv2.COLOR_BGR2GRAY)
 	for i in range(0,6):
 		for j in range(0,7):
 			if mono[100+(j*100)][150+(i*100)] != 0:
 				horizontal_roads_under_construction.append(chr(65+i)+chr(49+j)+'-'+chr(66+i)+chr(49+j))
-
+	
 	##################################################
 	
 	return horizontal_roads_under_construction	
@@ -135,14 +135,14 @@ def detect_vertical_roads_under_construction(maze_image):
 	vertical_roads_under_construction = []
 
 	##############	ADD YOUR CODE HERE	##############
-	
+
 	mono = cv2.cvtColor(maze_image, cv2.COLOR_BGR2GRAY)
 	for i in range(0,7):
 		for j in range(0,6):
 			if mono[150+(j*100)][100+(i*100)] != 0:
 				vertical_roads_under_construction.append(chr(65+i)+chr(49+j)+'-'+chr(65+i)+chr(50+j))
-
-	#################################################
+	
+	##################################################
 	
 	return vertical_roads_under_construction
 

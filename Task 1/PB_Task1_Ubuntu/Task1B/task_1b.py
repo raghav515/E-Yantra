@@ -134,7 +134,7 @@ def detect_ArUco_details(image):
             orient = orient - 360
         ArUco_details_dict[int(ids[i][0])] = [mid,orient]
         ArUco_corners[int(ids[i][0])] = co
-
+   
     ##################################################
     
     return ArUco_details_dict, ArUco_corners 
