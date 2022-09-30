@@ -166,7 +166,7 @@ def detect_medicine_packages(maze_image):
 			numpy array of image returned by cv2 library
 	Returns:
 	---
-	`medicine_packages` : [ list ]
+	`medicine_packages_present` : [ list ]
 			nested list containing details of the medicine packages present.
 			Each element of this list will contain 
 			- Shop number as Shop_n
@@ -175,15 +175,15 @@ def detect_medicine_packages(maze_image):
 			- Centroid co-ordinates of the package
 	Example call:
 	---
-	medicine_packages = detect_medicine_packages(maze_image)
+	medicine_packages_present = detect_medicine_packages(maze_image)
 	"""    
-	medicine_packages = []
+	medicine_packages_present = []
 
 	##############	ADD YOUR CODE HERE	##############
 
 	##################################################
 
-	return medicine_packages
+	return medicine_packages_present
 
 def detect_arena_parameters(maze_image):
 

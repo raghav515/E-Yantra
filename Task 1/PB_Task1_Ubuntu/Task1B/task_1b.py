@@ -116,6 +116,8 @@ def detect_ArUco_details(image):
     arucoDict = aruco.Dictionary_get(aruco.DICT_5X5_250)
     arucoParams = aruco.DetectorParameters_create()
     (corners, ids, rejected) = aruco.detectMarkers(image, arucoDict,parameters=arucoParams)
+    ArUco_D = {}
+    Corners = {}
     for i in range(len(ids)):
         sumx,sumy = 0,0
         co = []
@@ -132,8 +134,11 @@ def detect_ArUco_details(image):
             orient = 180+orient
         if orient>180:
             orient = orient - 360
-        ArUco_details_dict[int(ids[i][0])] = [mid,orient]
-        ArUco_corners[int(ids[i][0])] = co
+        ArUco_D[int(ids[i][0])] = [mid,orient]
+        Corners[int(ids[i][0])] = co
+    for i in sorted(ArUco_D.keys()):
+        ArUco_details_dict[i] = ArUco_D[i]
+        ArUco_corners[i] = Corners[i]
    
     ##################################################
     
