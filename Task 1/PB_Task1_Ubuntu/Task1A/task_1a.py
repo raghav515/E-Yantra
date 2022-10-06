@@ -181,6 +181,43 @@ def detect_medicine_packages(maze_image):
 
 	##############	ADD YOUR CODE HERE	##############
 
+	mono = cv2.cvtColor(maze_image, cv2.COLOR_BGR2GRAY)
+	for i in range(1,7):
+		for j in range(2):
+			for k in range(2):
+				med = []
+				cen = [30+(100*i)+(40*j),130+(40*k)]
+				up = mono[cen[1]-10][cen[0]-10]
+				side = mono[cen[1]][cen[0]-10]
+				if mono[cen[1]][cen[0]] == 97:
+					med.append('Shop_'+str(i))
+					med.append('Pink')
+				elif mono[cen[1]][cen[0]] == 150:
+					med.append('Shop_'+str(i))
+					med.append('Green')
+				elif mono[cen[1]][cen[0]] == 151:
+					med.append('Shop_'+str(i))
+					med.append('Orange')
+				elif mono[cen[1]][cen[0]] == 179:
+					med.append('Shop_'+str(i))
+					med.append('Skyblue') 
+
+				if up!=255 and side!=255:
+					med.append('Square')
+					med.append(cen)
+					medicine_packages_present.append(med)
+				elif up==255 and side!=255 and mono[cen[1]][cen[0]] != 255:
+					med.append('Circle') 
+					med.append(cen) 
+					medicine_packages_present.append(med) 
+				elif mono[cen[1]][cen[0]] != 255:
+					med.append('Triangle')
+					cen[1]=cen[1]-1
+					med.append(cen)
+					medicine_packages_present.append(med)
+
+	medicine_packages_present = sorted(medicine_packages_present,key=lambda item: (item[0], item[1]))
+
 	##################################################
 
 	return medicine_packages_present
@@ -218,6 +255,11 @@ def detect_arena_parameters(maze_image):
 
 	##############	ADD YOUR CODE HERE	##############
 	
+	arena_parameters['traffic_signals'] = detect_traffic_signals(maze_image)
+	arena_parameters['horizontal_roads_under_construction'] = detect_horizontal_roads_under_construction(maze_image)
+	arena_parameters['vertical_roads_under_construction'] = detect_vertical_roads_under_construction(maze_image)
+	arena_parameters['medicine_packages_present'] = detect_medicine_packages(maze_image)
+
 	##################################################
 	
 	return arena_parameters
