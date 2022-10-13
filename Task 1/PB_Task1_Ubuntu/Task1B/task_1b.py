@@ -27,6 +27,7 @@
 ## You have to implement this task with the five available  ##
 ## modules for this task                                    ##
 ##############################################################
+from xml.dom.minidom import Identified
 import numpy as np
 import cv2
 from cv2 import aruco
@@ -116,21 +117,33 @@ def detect_ArUco_details(image):
     arucoDict = aruco.Dictionary_get(aruco.DICT_5X5_250)
     arucoParams = aruco.DetectorParameters_create()
     (corners, ids, rejected) = aruco.detectMarkers(image, arucoDict,parameters=arucoParams)
-    for i in range(len(ids)):
-        sumx,sumy = 0,0
-        co = []
-        for j in range(4):
-            sumx = sumx + corners[i][0][j][0]
-            sumy = sumy + corners[i][0][j][1]
-            temp = [corners[i][0][j][0],corners[i][0][j][1]]
-            co.append(temp)
-        mid = [int(sumx/4),int(sumy/4)]
-        diffy = corners[i][0][0][1] - corners[i][0][3][1]
-        diffx = corners[i][0][0][0] - corners[i][0][3][0]
-        orient =int((math.atan2(diffx,-1*diffy)*180)/math.pi)
-        orient = -1 * orient
-        ArUco_details_dict[int(ids[i][0])] = [mid,orient]
-        ArUco_corners[int(ids[i][0])] = co
+    if ids is not None:
+        ids = ids.flatten()
+        ids = ids.tolist()
+        ArUco_corners = dict(zip(ids,corners))
+        for key in ArUco_corners:
+            temp = []
+            ArUco_corners[key] = ArUco_corners[key].tolist()
+            for i in range(0,4):
+                ArUco_corners[key][0][i] = list(map(int,ArUco_corners[key][0][i]))
+                temp.append(ArUco_corners[key][0][i])
+            ArUco_corners[key] = temp
+        for key in ArUco_corners:
+            top_left = ArUco_corners[key][0]
+            top_right = ArUco_corners[key][1]
+            bottom_right = ArUco_corners[key][2]
+            bottom_left = ArUco_corners[key][3]
+            center = np.array([int((top_left[0]+bottom_left[0]+bottom_right[0]+top_right[0])/4), int((top_left[1]+bottom_left[1]+bottom_right[1]+top_right[1])/4)])
+            top_centre = [0,0]
+            top_centre[0] = int((top_left[0]+top_right[0])/2)
+            top_centre[1] = int((top_left[1]+top_right[1])/2)
+            ref = np.array([[0,0], [640,0]])
+            angle_ref = int(math.degrees(math.atan2((ref[1][1]-ref[0][1]),(ref[1][0]-ref[0][0]))))
+            angle_prime = int(math.degrees(math.atan2((top_centre[1]-center[1]), top_centre[0]-center[0])))
+            angle = angle_ref - angle_prime - 90
+            if angle<-180:
+                angle = 360+angle
+            ArUco_details_dict[key] = [center.tolist(), angle]
    
     ##################################################
     
