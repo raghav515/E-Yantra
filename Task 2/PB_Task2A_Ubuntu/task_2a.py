@@ -32,6 +32,7 @@
 ####################### IMPORT MODULES #######################
 ## You are not allowed to make any changes in this section. ##
 ##############################################################
+from operator import le
 import  sys
 import traceback
 import time
@@ -67,32 +68,36 @@ def control_logic(sim):
 	f = 1
 	l_joint = sim.getObject('/Diff_Drive_Bot/left_joint')
 	r_joint = sim.getObject('/Diff_Drive_Bot/right_joint')
+	sim.setJointTargetVelocity(l_joint, 0)
+	sim.setJointTargetVelocity(r_joint, 0)
 	while(f):
 		front = detect_distance_sensor_1(sim)
 		right = detect_distance_sensor_2(sim)
-		print(front)
-		# sim.setJointTargetVelocity(l_joint, 0)
-		# sim.setJointTargetVelocity(r_joint, 0)
-		
-		if front > 0.175 or front==0 :
-			#print("Forward",front,right)
-			sim.setJointTargetVelocity(l_joint, 3)
-			sim.setJointTargetVelocity(r_joint, 3)
-		else:
+		left = detect_distance_sensor_3(sim)
+		#print(front,right,left)
+		if right<0.5 and front<0.25 and front!=0.0 and (left>0.5 or left==0.0):
 			sim.setJointTargetVelocity(l_joint, 0)
 			sim.setJointTargetVelocity(r_joint, 0)
-		# elif (right > 0.175 or right==0.0) and front < 0.175:
-		# 	#print("Right",front,right)
-		# 	sim.setJointTargetVelocity(l_joint, 1)
-		# 	sim.setJointTargetVelocity(r_joint, -1)
-		# 	time.sleep(2.87)
-		# elif right < 0.5 and front < 0.22 and right != 0.0:
-		# 	#print("Left",front,right)
-		# 	sim.setJointTargetVelocity(l_joint, -1)
-		# 	sim.setJointTargetVelocity(r_joint, 1)
-		# 	time.sleep(2.87)
-			
-	#time.sleep(15)
+			sim.setJointTargetVelocity(l_joint, -1)
+			sim.setJointTargetVelocity(r_joint, 1)
+			time.sleep(2.74)
+			sim.setJointTargetVelocity(l_joint, 0)
+			sim.setJointTargetVelocity(r_joint, 0)
+		elif left<0.5 and front<0.25 and front!=0.0 and (right>0.5 or right==0.0):
+			sim.setJointTargetVelocity(l_joint, 0)
+			sim.setJointTargetVelocity(r_joint, 0)
+			sim.setJointTargetVelocity(l_joint, 1)
+			sim.setJointTargetVelocity(r_joint, -1)
+			time.sleep(2.74)
+			sim.setJointTargetVelocity(l_joint, 0)
+			sim.setJointTargetVelocity(r_joint, 0)
+		elif right<0.3 and left<0.3 and front<0.25 and front!=0.0 and right!=0.0 and left!=0.0:
+			sim.setJointTargetVelocity(l_joint, 0)
+			sim.setJointTargetVelocity(r_joint, 0)
+			break
+		else:
+			sim.setJointTargetVelocity(l_joint, 3)
+			sim.setJointTargetVelocity(r_joint, 3)
 
 	##################################################
 
@@ -122,7 +127,7 @@ def detect_distance_sensor_1(sim):
 	proxy_1 = sim.getObject('/Diff_Drive_Bot/distance_sensor_1')
 	dis=sim.readProximitySensor(proxy_1)
 	distance = dis[1]
-	#print (dis)
+
 	##################################################
 	return distance
 
@@ -160,7 +165,7 @@ def detect_distance_sensor_3(sim):
 	"""
 	Purpose:
 	---
-	Returns the distance of obstacle detected by proximity sensor named 'distance_sensor_3'
+	Returns the distance of obstacle detected by proximity sensor named 'distance_sensor_1'
 
 	Input Arguments:
 	---
@@ -174,7 +179,7 @@ def detect_distance_sensor_3(sim):
 
 	Example call:
 	---
-	distance_3 = detect_distance_sensor_3(sim)
+	distance_1 = detect_distance_sensor_1(sim)
 	"""
 	distance = None
 	##############  ADD YOUR CODE HERE  ##############
