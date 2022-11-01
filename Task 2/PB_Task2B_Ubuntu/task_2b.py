@@ -78,16 +78,76 @@ def control_logic(sim):
 
 	l_joint = sim.getObject('/Diff_Drive_Bot/left_joint')
 	r_joint = sim.getObject('/Diff_Drive_Bot/right_joint')
-	sim.setJointTargetVelocity(l_joint, 0.5)
-	sim.setJointTargetVelocity(r_joint, -0.5)
 	cam = sim.getObject('/Diff_Drive_Bot/vision_sensor')
 	while(1):
 		i, res =sim.getVisionSensorImg(cam)
 		img = np.frombuffer(i, np.uint8)
 		img.resize([res[0], res[1], 3])
-		cv2.imshow('Frame', img)
-		if cv2.waitKey(25) & 0xFF == ord('q'):
+		frameWidth = 480
+		frameHeight = 360
+		img = cv2.resize(img, (frameWidth, frameHeight))
+		img = cv2.flip(img,0)
+		imgHsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+		lower = np.array([0, 0, 154])
+		upper = np.array([179, 255, 255])
+		mask = cv2.inRange(imgHsv, lower, upper)
+		mask = cv2.bitwise_not(mask)
+		#result = cv2.bitwise_and(img, img, mask=mask)
+		#mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
+		contours, hierarchy = cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE)
+		if len(contours) > 0 :
+			c = max(contours, key=cv2.contourArea)
+			M = cv2.moments(c)
+			if M["m00"] !=0 :
+				cx = int(M['m10']/M['m00'])
+				cy = int(M['m01']/M['m00'])
+				if cx<165:
+					cx = cx + 180
+				elif cx>390:
+					cx = cx - 190
+				#print("CX : "+str(cx)+"  CY : "+str(cy))
+				if cx >= 280 :
+					print("Turn Left")
+					sim.setJointTargetVelocity(l_joint, -0.2)
+					sim.setJointTargetVelocity(r_joint, 0.2)
+				if cx < 280 and cx > 200 :
+					print("On Track!")
+					sim.setJointTargetVelocity(l_joint, 0.5)
+					sim.setJointTargetVelocity(r_joint, 0.5)
+				if cx <=200 :
+					print("Turn Right")
+					sim.setJointTargetVelocity(l_joint, 0.2)
+					sim.setJointTargetVelocity(r_joint, -0.2)
+				if img[cy][cx][0] == 253 and img[cy][cx][1] == 204 and img[cy][cx][2] == 4:
+					print("Node Reached")
+					sim.setJointTargetVelocity(l_joint, 0)
+					sim.setJointTargetVelocity(r_joint, 1)
+					time.sleep(4)
+				cv2.circle(img, (cx,cy), 5, (0,0,255), -1)
+		cv2.imshow('Video', img)
+		cv2.imshow('Mask', mask)
+		if cv2.waitKey(1) and 0xFF == ord('q'):
 			break
+	'''
+	while True:
+		a = input()
+		if a=='w':
+			sim.setJointTargetVelocity(l_joint, 0.5)
+			sim.setJointTargetVelocity(r_joint, 0.5)
+		elif a=='a':
+			sim.setJointTargetVelocity(l_joint, -0.2)
+			sim.setJointTargetVelocity(r_joint, 0.2)
+		elif a=='d':
+			sim.setJointTargetVelocity(l_joint, 0.2)
+			sim.setJointTargetVelocity(r_joint, -0.2)
+		elif a=='s':
+			sim.setJointTargetVelocity(l_joint, 0)
+			sim.setJointTargetVelocity(r_joint, 0)
+		elif a=='r':
+			read_qr_code(sim)
+		elif a=='q':
+			break
+	'''
 	
 	##################################################
 
@@ -114,16 +174,6 @@ def read_qr_code(sim):
 	"""
 	qr_message = None
 	##############  ADD YOUR CODE HERE  ##############
-
-	cam = sim.getObject('/Diff_Drive_Bot/vision_sensor')
-	#while(1):
-	i, res =sim.getVisionSensorImg(cam)
-	print(i)
-		#img = np.array(i)
-		#img.resize([res[0], res[1], 3])
-		#cv2.imshow('Frame', img)
-		#if cv2.waitKey(25) & 0xFF == ord('q'):
-			#break
 
 	##################################################
 	return qr_message
