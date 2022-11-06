@@ -21,10 +21,10 @@
 *****************************************************************************************
 '''
 
-# Team ID:			[ Team-ID ]
-# Author List:		[ Names of team members worked on this file separated by Comma: Name1, Name2, ... ]
+# Team ID:			1067
+# Author List:		Joel Jojo Painuthara, Raghavendra Pandurang Jadhav, Pooja M, Dhiren Bhandary
 # Filename:			task_2b.py
-# Functions:		control_logic, read_qr_code
+# Functions:		control_logic, read_qr_code, turn
 # 					[ Comma separated list of functions in this file ]
 # Global variables:	
 # 					[ List of global variables defined in this file ]
@@ -47,7 +47,47 @@ from pyzbar.pyzbar import decode
 
 ################# ADD UTILITY FUNCTIONS HERE #################
 
-
+def turn(sim):
+	l_joint = sim.getObject('/Diff_Drive_Bot/left_joint')
+	r_joint = sim.getObject('/Diff_Drive_Bot/right_joint')
+	cam = sim.getObject('/Diff_Drive_Bot/vision_sensor')
+	frameWidth = 480
+	frameHeight = 360
+	lower = np.array([0, 0, 154])
+	upper = np.array([179, 255, 255])
+	while(1):
+		i, res =sim.getVisionSensorImg(cam)
+		img = np.frombuffer(i, np.uint8)
+		img.resize([res[0], res[1], 3])
+		img = cv2.resize(img, (frameWidth, frameHeight))
+		img = cv2.flip(img,0)
+		imgHsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
+		mask = cv2.inRange(imgHsv, lower, upper)
+		edges = cv2.Canny(mask, 50, 150, apertureSize=3)
+		lines = cv2.HoughLines(edges, 1, np.pi/180, 70)
+		x = 0
+		i = 0
+		if lines is not None:
+			for r_theta in lines:
+				arr = np.array(r_theta[0], dtype=np.float64)
+				r, theta = arr
+				if theta < np.pi/18. and theta > -1*np.pi/18.:
+					a = np.cos(theta)
+					b = np.sin(theta)
+					x0 = a*r
+					y0 = b*r
+					x1 = int(x0 + 1000*(-b))
+					y1 = int(y0 + 1000*(a))
+					x2 = int(x0 - 1000*(-b))
+					y2 = int(y0 - 1000*(a))
+					x = x + x1 + x2
+					i = i + 2	
+					cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+		if i >= 3:
+			break
+		cv2.circle(img, (240, 300), 2, (255,0,0), 3)
+		cv2.imshow('Video', img)
+				
 
 
 
@@ -79,75 +119,99 @@ def control_logic(sim):
 	l_joint = sim.getObject('/Diff_Drive_Bot/left_joint')
 	r_joint = sim.getObject('/Diff_Drive_Bot/right_joint')
 	cam = sim.getObject('/Diff_Drive_Bot/vision_sensor')
+	sim.setJointTargetVelocity(l_joint, 0.5)
+	sim.setJointTargetVelocity(r_joint, 0.5)
+	frameWidth = 480
+	frameHeight = 360
+	lower = np.array([0, 0, 154])
+	upper = np.array([179, 255, 255])
+	dir = [1,2,1,2,0,2,1,2,0,2,1,2,0,2,1,2,3]
+	cp = {4:'checkpoint E',8:'checkpoint I',12:'checkpoint M'}
+	node = 0
 	while(1):
 		i, res =sim.getVisionSensorImg(cam)
 		img = np.frombuffer(i, np.uint8)
 		img.resize([res[0], res[1], 3])
-		frameWidth = 480
-		frameHeight = 360
 		img = cv2.resize(img, (frameWidth, frameHeight))
 		img = cv2.flip(img,0)
 		imgHsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
-		lower = np.array([0, 0, 154])
-		upper = np.array([179, 255, 255])
 		mask = cv2.inRange(imgHsv, lower, upper)
-		mask = cv2.bitwise_not(mask)
-		#result = cv2.bitwise_and(img, img, mask=mask)
-		#mask = cv2.cvtColor(mask, cv2.COLOR_GRAY2BGR)
-		contours, hierarchy = cv2.findContours(mask, 1, cv2.CHAIN_APPROX_NONE)
-		if len(contours) > 0 :
-			c = max(contours, key=cv2.contourArea)
-			M = cv2.moments(c)
-			if M["m00"] !=0 :
-				cx = int(M['m10']/M['m00'])
-				cy = int(M['m01']/M['m00'])
-				if cx<165:
-					cx = cx + 180
-				elif cx>390:
-					cx = cx - 190
-				#print("CX : "+str(cx)+"  CY : "+str(cy))
-				if cx >= 280 :
-					print("Turn Left")
-					sim.setJointTargetVelocity(l_joint, -0.2)
-					sim.setJointTargetVelocity(r_joint, 0.2)
-				if cx < 280 and cx > 200 :
-					print("On Track!")
-					sim.setJointTargetVelocity(l_joint, 0.5)
-					sim.setJointTargetVelocity(r_joint, 0.5)
-				if cx <=200 :
-					print("Turn Right")
-					sim.setJointTargetVelocity(l_joint, 0.2)
-					sim.setJointTargetVelocity(r_joint, -0.2)
-				if img[cy][cx][0] == 253 and img[cy][cx][1] == 204 and img[cy][cx][2] == 4:
-					print("Node Reached")
-					sim.setJointTargetVelocity(l_joint, 0)
-					sim.setJointTargetVelocity(r_joint, 1)
-					time.sleep(4)
-				cv2.circle(img, (cx,cy), 5, (0,0,255), -1)
-		cv2.imshow('Video', img)
-		cv2.imshow('Mask', mask)
-		if cv2.waitKey(1) and 0xFF == ord('q'):
-			break
-	'''
-	while True:
-		a = input()
-		if a=='w':
-			sim.setJointTargetVelocity(l_joint, 0.5)
-			sim.setJointTargetVelocity(r_joint, 0.5)
-		elif a=='a':
-			sim.setJointTargetVelocity(l_joint, -0.2)
-			sim.setJointTargetVelocity(r_joint, 0.2)
-		elif a=='d':
+		edges = cv2.Canny(mask, 50, 150, apertureSize=3)
+		lines = cv2.HoughLines(edges, 1, np.pi/180, 70)
+		x = 0
+		i = 0
+		if lines is not None:
+			for r_theta in lines:
+				arr = np.array(r_theta[0], dtype=np.float64)
+				r, theta = arr
+				if theta < np.pi/6. and theta > -1*np.pi/6.:
+					a = np.cos(theta)
+					b = np.sin(theta)
+					x0 = a*r
+					y0 = b*r
+					x1 = int(x0 + 1000*(-b))
+					y1 = int(y0 + 1000*(a))
+					x2 = int(x0 - 1000*(-b))
+					y2 = int(y0 - 1000*(a))
+					x = x + x1 + x2
+					i = i + 2	
+					cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+		if (img[300][240][0] == 253 and img[300][240][2] == 4):
+			if dir[node]==1:
+				sim.setJointTargetVelocity(l_joint, -0.1)
+				sim.setJointTargetVelocity(r_joint, 0.4)
+				time.sleep(2)
+				turn(sim)
+			elif dir[node]==2:
+				sim.setJointTargetVelocity(l_joint, 0.4)
+				sim.setJointTargetVelocity(r_joint, -0.1)
+				time.sleep(2)
+				turn(sim)
+			elif dir[node]==0:
+				sim.setJointTargetVelocity(l_joint, 0)
+				sim.setJointTargetVelocity(r_joint, 0)
+				arena_dummy_handle = sim.getObject("/Arena_dummy") 
+				childscript_handle = sim.getScript(sim.scripttype_childscript, arena_dummy_handle, "")
+				sim.callScriptFunction("activate_qr_code", childscript_handle, cp[node])
+				qr = read_qr_code(sim)
+				print(qr)
+				if 'Cone' in qr:
+					sim.callScriptFunction("deliver_package", childscript_handle, "package_1", cp[node])
+				elif 'Cylinder' in qr:
+					sim.callScriptFunction("deliver_package", childscript_handle, "package_2", cp[node])
+				elif 'Cuboid' in qr:
+					sim.callScriptFunction("deliver_package", childscript_handle, "package_3", cp[node])
+				sim.callScriptFunction("deactivate_qr_code", childscript_handle, cp[node])
+				sim.setJointTargetVelocity(l_joint, 0.5)
+				sim.setJointTargetVelocity(r_joint, 0.5)
+				time.sleep(2)
+			elif dir[node]==3:
+				sim.setJointTargetVelocity(l_joint, 0.5)
+				sim.setJointTargetVelocity(r_joint, 0.5)
+				time.sleep(2)
+				sim.setJointTargetVelocity(l_joint,0)
+				sim.setJointTargetVelocity(r_joint,0)
+			node = node + 1
+		elif i!=0:
+			x = int(x/i)
+			cv2.circle(img, (x, 180), 2, (0, 0, 255), 3)
+			if x < 230:
+				sim.setJointTargetVelocity(l_joint, 0.5)
+				sim.setJointTargetVelocity(r_joint, 0.3)
+			elif x > 250:
+				sim.setJointTargetVelocity(l_joint, 0.3)
+				sim.setJointTargetVelocity(r_joint, 0.5)
+			else:
+				sim.setJointTargetVelocity(l_joint, 0.5)
+				sim.setJointTargetVelocity(r_joint, 0.5)
+		else:
 			sim.setJointTargetVelocity(l_joint, 0.2)
-			sim.setJointTargetVelocity(r_joint, -0.2)
-		elif a=='s':
-			sim.setJointTargetVelocity(l_joint, 0)
-			sim.setJointTargetVelocity(r_joint, 0)
-		elif a=='r':
-			read_qr_code(sim)
-		elif a=='q':
+			sim.setJointTargetVelocity(r_joint, 0.2)
+		cv2.circle(img, (240, 300), 2, (255,0,0), 3)
+		cv2.imshow('Video', img)
+		if cv2.waitKey(10) and 0xFF == ord('q'):
+			cv2.destroyAllWindows()
 			break
-	'''
 	
 	##################################################
 
@@ -174,6 +238,20 @@ def read_qr_code(sim):
 	"""
 	qr_message = None
 	##############  ADD YOUR CODE HERE  ##############
+
+	cam = sim.getObject('/Diff_Drive_Bot/vision_sensor')
+	i, res =sim.getVisionSensorImg(cam)
+	img = np.frombuffer(i, np.uint8)
+	img.resize([res[0], res[1], 3])
+	img = cv2.flip(img,0)
+	mono = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+	cv2.imshow('QR', img)
+	time.sleep(2)
+	cv2.destroyAllWindows()
+	codes = decode(mono)
+	for code in codes:
+		qr_message = code.data.decode()
+		break
 
 	##################################################
 	return qr_message
