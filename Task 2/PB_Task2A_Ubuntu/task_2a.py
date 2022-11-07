@@ -65,39 +65,35 @@ def control_logic(sim):
 	"""
 	##############  ADD YOUR CODE HERE  ##############
 
-	f = 1
 	l_joint = sim.getObject('/Diff_Drive_Bot/left_joint')
 	r_joint = sim.getObject('/Diff_Drive_Bot/right_joint')
 	sim.setJointTargetVelocity(l_joint, 0)
 	sim.setJointTargetVelocity(r_joint, 0)
-	while(f):
-		front = detect_distance_sensor_1(sim)
+	while 1:
 		right = detect_distance_sensor_2(sim)
 		left = detect_distance_sensor_3(sim)
-		#print(front,right,left)
-		if right<0.5 and front<0.25 and front!=0.0 and (left>0.5 or left==0.0):
-			sim.setJointTargetVelocity(l_joint, 0)
-			sim.setJointTargetVelocity(r_joint, 0)
-			sim.setJointTargetVelocity(l_joint, -1)
-			sim.setJointTargetVelocity(r_joint, 1)
-			time.sleep(2.74)
-			sim.setJointTargetVelocity(l_joint, 0)
-			sim.setJointTargetVelocity(r_joint, 0)
-		elif left<0.5 and front<0.25 and front!=0.0 and (right>0.5 or right==0.0):
-			sim.setJointTargetVelocity(l_joint, 0)
-			sim.setJointTargetVelocity(r_joint, 0)
-			sim.setJointTargetVelocity(l_joint, 1)
-			sim.setJointTargetVelocity(r_joint, -1)
-			time.sleep(2.74)
-			sim.setJointTargetVelocity(l_joint, 0)
-			sim.setJointTargetVelocity(r_joint, 0)
-		elif right<0.3 and left<0.3 and front<0.25 and front!=0.0 and right!=0.0 and left!=0.0:
-			sim.setJointTargetVelocity(l_joint, 0)
-			sim.setJointTargetVelocity(r_joint, 0)
-			break
+		front = detect_distance_sensor_1(sim)
+		if front<0.2 and left == 0.0 and front!=0:
+			while detect_distance_sensor_1(sim)!=0:
+				sim.setJointTargetVelocity(l_joint, -1)
+				sim.setJointTargetVelocity(r_joint, 1)
+				if detect_distance_sensor_3(sim)==0 and detect_distance_sensor_2(sim) < 0.02:
+					break
+		elif front<0.2 and right == 0.0 and front!=0:
+			while detect_distance_sensor_1(sim)!=0:
+				sim.setJointTargetVelocity(l_joint, 1)
+				sim.setJointTargetVelocity(r_joint, -1)
+				if detect_distance_sensor_3(sim) < 0.02 and detect_distance_sensor_2(sim) == 0:
+					break
+		if right>0.18:
+			sim.setJointTargetVelocity(l_joint, 2)
+			sim.setJointTargetVelocity(r_joint, 1.7)
+		elif left>0.21:
+			sim.setJointTargetVelocity(l_joint, 1.7)
+			sim.setJointTargetVelocity(r_joint, 2)
 		else:
-			sim.setJointTargetVelocity(l_joint, 3)
-			sim.setJointTargetVelocity(r_joint, 3)
+			sim.setJointTargetVelocity(l_joint, 2)
+			sim.setJointTargetVelocity(r_joint, 2)
 
 	##################################################
 
