@@ -48,8 +48,6 @@ from pyzbar.pyzbar import decode
 ################# ADD UTILITY FUNCTIONS HERE #################
 
 def turn(sim):
-	l_joint = sim.getObject('/Diff_Drive_Bot/left_joint')
-	r_joint = sim.getObject('/Diff_Drive_Bot/right_joint')
 	cam = sim.getObject('/Diff_Drive_Bot/vision_sensor')
 	frameWidth = 480
 	frameHeight = 360
@@ -75,18 +73,16 @@ def turn(sim):
 					a = np.cos(theta)
 					b = np.sin(theta)
 					x0 = a*r
-					y0 = b*r
+					#y0 = b*r
 					x1 = int(x0 + 1000*(-b))
-					y1 = int(y0 + 1000*(a))
+					#y1 = int(y0 + 1000*(a))
 					x2 = int(x0 - 1000*(-b))
-					y2 = int(y0 - 1000*(a))
+					#y2 = int(y0 - 1000*(a))
 					x = x + x1 + x2
 					i = i + 2	
-					cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+					#cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
 		if i >= 3:
 			break
-		cv2.circle(img, (240, 300), 2, (255,0,0), 3)
-		cv2.imshow('Video', img)
 				
 
 
@@ -148,14 +144,14 @@ def control_logic(sim):
 					a = np.cos(theta)
 					b = np.sin(theta)
 					x0 = a*r
-					y0 = b*r
+					#y0 = b*r
 					x1 = int(x0 + 1000*(-b))
-					y1 = int(y0 + 1000*(a))
+					#y1 = int(y0 + 1000*(a))
 					x2 = int(x0 - 1000*(-b))
-					y2 = int(y0 - 1000*(a))
+					#y2 = int(y0 - 1000*(a))
 					x = x + x1 + x2
 					i = i + 2	
-					cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
+					#cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
 		if (img[300][240][0] == 253 and img[300][240][2] == 4):
 			if dir[node]==1:
 				sim.setJointTargetVelocity(l_joint, -0.1)
@@ -191,6 +187,7 @@ def control_logic(sim):
 				time.sleep(2)
 				sim.setJointTargetVelocity(l_joint,0)
 				sim.setJointTargetVelocity(r_joint,0)
+				break
 			node = node + 1
 		elif i!=0:
 			x = int(x/i)
@@ -207,11 +204,11 @@ def control_logic(sim):
 		else:
 			sim.setJointTargetVelocity(l_joint, 0.2)
 			sim.setJointTargetVelocity(r_joint, 0.2)
-		cv2.circle(img, (240, 300), 2, (255,0,0), 3)
+		'''cv2.circle(img, (240, 300), 2, (255,0,0), 3)
 		cv2.imshow('Video', img)
 		if cv2.waitKey(10) and 0xFF == ord('q'):
 			cv2.destroyAllWindows()
-			break
+			break'''
 	
 	##################################################
 
@@ -245,9 +242,6 @@ def read_qr_code(sim):
 	img.resize([res[0], res[1], 3])
 	img = cv2.flip(img,0)
 	mono = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-	cv2.imshow('QR', img)
-	time.sleep(2)
-	cv2.destroyAllWindows()
 	codes = decode(mono)
 	for code in codes:
 		qr_message = code.data.decode()
