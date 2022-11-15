@@ -123,6 +123,7 @@ def control_logic(sim):
 	upper = np.array([179, 255, 255])
 	dir = [1,2,1,2,0,2,1,2,0,2,1,2,0,2,1,2,3]
 	cp = {4:'checkpoint E',8:'checkpoint I',12:'checkpoint M'}
+	app = 0
 	node = 0
 	while(1):
 		i, res =sim.getVisionSensorImg(cam)
@@ -133,6 +134,7 @@ def control_logic(sim):
 		imgHsv = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)
 		mask = cv2.inRange(imgHsv, lower, upper)
 		edges = cv2.Canny(mask, 50, 150, apertureSize=3)
+		
 		lines = cv2.HoughLines(edges, 1, np.pi/180, 70)
 		x = 0
 		i = 0
@@ -152,16 +154,16 @@ def control_logic(sim):
 					x = x + x1 + x2
 					i = i + 2	
 					#cv2.line(img, (x1, y1), (x2, y2), (0, 0, 255), 2)
-		if (img[300][240][0] == 253 and img[300][240][2] == 4):
+		if (img[250][120][0] == 253 and img[250][120][2] == 4) or (img[250][240][0] == 253 and img[250][240][2] == 4) or (img[250][360][0] == 253 and img[250][360][2] == 4):
 			if dir[node]==1:
-				sim.setJointTargetVelocity(l_joint, -0.1)
-				sim.setJointTargetVelocity(r_joint, 0.4)
-				time.sleep(2)
+				sim.setJointTargetVelocity(l_joint, -0.2)
+				sim.setJointTargetVelocity(r_joint, 0.8)
+				time.sleep(1)
 				turn(sim)
 			elif dir[node]==2:
-				sim.setJointTargetVelocity(l_joint, 0.4)
-				sim.setJointTargetVelocity(r_joint, -0.1)
-				time.sleep(2)
+				sim.setJointTargetVelocity(l_joint, 0.8)
+				sim.setJointTargetVelocity(r_joint, -0.2)
+				time.sleep(1)
 				turn(sim)
 			elif dir[node]==0:
 				sim.setJointTargetVelocity(l_joint, 0)
@@ -180,7 +182,7 @@ def control_logic(sim):
 				sim.callScriptFunction("deactivate_qr_code", childscript_handle, cp[node])
 				sim.setJointTargetVelocity(l_joint, 0.5)
 				sim.setJointTargetVelocity(r_joint, 0.5)
-				time.sleep(2)
+				time.sleep(1)
 			elif dir[node]==3:
 				sim.setJointTargetVelocity(l_joint, 0.5)
 				sim.setJointTargetVelocity(r_joint, 0.5)
@@ -189,26 +191,31 @@ def control_logic(sim):
 				sim.setJointTargetVelocity(r_joint,0)
 				break
 			node = node + 1
+			if dir[node]==0:
+				app = 1
+			else:
+				app = 0
 		elif i!=0:
 			x = int(x/i)
 			cv2.circle(img, (x, 180), 2, (0, 0, 255), 3)
 			if x < 230:
-				sim.setJointTargetVelocity(l_joint, 0.5)
-				sim.setJointTargetVelocity(r_joint, 0.3)
+				sim.setJointTargetVelocity(l_joint, 2 - (app*0.7))
+				sim.setJointTargetVelocity(r_joint, 1.2 - (app*0.4))
 			elif x > 250:
-				sim.setJointTargetVelocity(l_joint, 0.3)
-				sim.setJointTargetVelocity(r_joint, 0.5)
+				sim.setJointTargetVelocity(l_joint, 1.2 - (app*0.4))
+				sim.setJointTargetVelocity(r_joint, 2 - (app*0.7))
 			else:
-				sim.setJointTargetVelocity(l_joint, 0.5)
-				sim.setJointTargetVelocity(r_joint, 0.5)
+				sim.setJointTargetVelocity(l_joint, 2 - (app*0.7))
+				sim.setJointTargetVelocity(r_joint, 2 - (app*0.7))
 		else:
-			sim.setJointTargetVelocity(l_joint, 0.2)
-			sim.setJointTargetVelocity(r_joint, 0.2)
-		'''cv2.circle(img, (240, 300), 2, (255,0,0), 3)
-		cv2.imshow('Video', img)
-		if cv2.waitKey(10) and 0xFF == ord('q'):
-			cv2.destroyAllWindows()
-			break'''
+			sim.setJointTargetVelocity(l_joint, 0.7)
+			sim.setJointTargetVelocity(r_joint, 0.7)
+		
+		cv2.circle(img, (240, 300), 2, (255,0,0), 3)
+		# cv2.imshow('Video', img)
+		# if cv2.waitKey(10) and 0xFF == ord('q'):
+		# 	cv2.destroyAllWindows()
+		# 	break
 	
 	##################################################
 
