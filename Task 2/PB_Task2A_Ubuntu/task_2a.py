@@ -24,7 +24,7 @@
 # Team ID:			1067
 # Author List:		Joel Jojo Painuthara, Raghavendra Pandurang Jadhav, Pooja M, Dhiren Bhandary
 # Filename:			task_2a.py
-# Functions:		control_logic, detect_distance_sensor_1, detect_distance_sensor_2
+# Functions:		control_logic, detect_distance_sensor_1, detect_distance_sensor_2, detect_distance_sensor_3
 # 					[ Comma separated list of functions in this file ]
 # Global variables:	
 # 					[ List of global variables defined in this file ]
@@ -32,7 +32,6 @@
 ####################### IMPORT MODULES #######################
 ## You are not allowed to make any changes in this section. ##
 ##############################################################
-from operator import le
 import  sys
 import traceback
 import time
@@ -70,30 +69,66 @@ def control_logic(sim):
 	sim.setJointTargetVelocity(l_joint, 0)
 	sim.setJointTargetVelocity(r_joint, 0)
 	while 1:
-		right = detect_distance_sensor_2(sim)
-		left = detect_distance_sensor_3(sim)
-		front = detect_distance_sensor_1(sim)
-		if front<0.2 and left == 0.0 and front!=0:
-			while detect_distance_sensor_1(sim)!=0:
-				sim.setJointTargetVelocity(l_joint, -1)
-				sim.setJointTargetVelocity(r_joint, 1)
-				if detect_distance_sensor_3(sim)==0 and detect_distance_sensor_2(sim) < 0.02:
-					break
-		elif front<0.2 and right == 0.0 and front!=0:
-			while detect_distance_sensor_1(sim)!=0:
-				sim.setJointTargetVelocity(l_joint, 1)
-				sim.setJointTargetVelocity(r_joint, -1)
-				if detect_distance_sensor_3(sim) < 0.02 and detect_distance_sensor_2(sim) == 0:
-					break
-		if right>0.18:
-			sim.setJointTargetVelocity(l_joint, 2)
-			sim.setJointTargetVelocity(r_joint, 1.7)
-		elif left>0.21:
-			sim.setJointTargetVelocity(l_joint, 1.7)
-			sim.setJointTargetVelocity(r_joint, 2)
+		if detect_distance_sensor_1(sim) >= 0.2 or  detect_distance_sensor_1(sim) ==0:
+
+			if detect_distance_sensor_2(sim) < detect_distance_sensor_3(sim):
+				if(detect_distance_sensor_2(sim) !=0 and detect_distance_sensor_3(sim)!=0):
+					sim.setJointTargetVelocity(l_joint, 0)
+					sim.setJointTargetVelocity(r_joint, 1)
+
+			elif detect_distance_sensor_2(sim) > detect_distance_sensor_3(sim):
+				if(detect_distance_sensor_2(sim) !=0 and detect_distance_sensor_3(sim)!=0):
+					sim.setJointTargetVelocity(l_joint, 1)
+					sim.setJointTargetVelocity(r_joint, 0)
+				sim.setJointTargetVelocity(l_joint, 2)
+				sim.setJointTargetVelocity(r_joint, 2)
 		else:
-			sim.setJointTargetVelocity(l_joint, 2)
-			sim.setJointTargetVelocity(r_joint, 2)
+			sim.setJointTargetVelocity(l_joint, 0)
+			sim.setJointTargetVelocity(r_joint, 0)
+			time.sleep(1)
+			if detect_distance_sensor_2(sim)==0 and detect_distance_sensor_3(sim)==0:
+				while(detect_distance_sensor_1(sim)!=0 	and detect_distance_sensor_2(sim)==0 and detect_distance_sensor_3(sim)==0):
+					sim.setJointTargetVelocity(l_joint, 0.2)
+					sim.setJointTargetVelocity(r_joint, -0.2)
+			else:
+				while(detect_distance_sensor_1(sim)!=0 and detect_distance_sensor_2(sim)!=detect_distance_sensor_3(sim)):
+					sim.setJointTargetVelocity(l_joint, -0.2)
+					sim.setJointTargetVelocity(r_joint, 0.2)
+					#time.sleep(0.5)
+					if(detect_distance_sensor_2(sim)==detect_distance_sensor_3(sim)):
+						print("ABE")
+		
+
+	# i = 1
+	# while 1:
+	# 	right = detect_distance_sensor_2(sim)
+	# 	left = detect_distance_sensor_3(sim)
+	# 	front = detect_distance_sensor_1(sim)
+	# 	if front<0.24 and left==0.0 and front!=0:
+	# 		while not(detect_distance_sensor_1(sim)==0  and detect_distance_sensor_3(sim)==0 and detect_distance_sensor_2(sim) < front * 0.89):
+	# 			sim.setJointTargetVelocity(l_joint, -1)
+	# 			sim.setJointTargetVelocity(r_joint, 1)
+	# 	elif front<0.225 and right == 0.0 and front!=0:
+	# 		while not(detect_distance_sensor_1(sim)==0  and detect_distance_sensor_2(sim)==0 and detect_distance_sensor_3(sim) < front * 0.89):
+	# 			sim.setJointTargetVelocity(l_joint, 1)
+	# 			sim.setJointTargetVelocity(r_joint, -1)
+	# 	elif right<0.22 and left<0.22 and front<0.24 and front!=0 and right!=0 and left!=0:
+	# 		sim.setJointTargetVelocity(l_joint, 0)
+	# 		sim.setJointTargetVelocity(r_joint, 0)
+	# 		break
+	# 	if right>0.175 and left<0.21 and left != 0:
+	# 		sim.setJointTargetVelocity(l_joint, 0.5*i)
+	# 		sim.setJointTargetVelocity(r_joint, 0.5*i*(1-right-0.175))
+	# 	elif right<0.175 and right!=0 and left>0.2:
+	# 		sim.setJointTargetVelocity(l_joint, 0.5*i*(1-left-0.2))
+	# 		sim.setJointTargetVelocity(r_joint, 0.5*i)
+	# 	else:
+	# 		sim.setJointTargetVelocity(l_joint, 0.5*i)
+	# 		sim.setJointTargetVelocity(r_joint, 0.5*i)
+	# 	if i<8 and front == 0:
+	# 		i+=0.5
+	# 	elif i>2 and (front != 0 or left==0 or right==0):
+	# 		i-=1.5
 
 	##################################################
 
