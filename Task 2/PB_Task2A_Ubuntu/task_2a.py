@@ -68,35 +68,48 @@ def control_logic(sim):
 	r_joint = sim.getObject('/Diff_Drive_Bot/right_joint')
 	sim.setJointTargetVelocity(l_joint, 0)
 	sim.setJointTargetVelocity(r_joint, 0)
+	node = 0
+	speed  = 0.1
 	while 1:
-		if detect_distance_sensor_1(sim) >= 0.2 or  detect_distance_sensor_1(sim) ==0:
+		front = detect_distance_sensor_1(sim)
+		right_front = detect_distance_sensor_2(sim)
+		right_back = detect_distance_sensor_3(sim)
+		if front >= 0.18 or front ==0:
+			if right_front < right_back and right_front < 0.1479 and detect_distance_sensor_2(sim) !=0 and detect_distance_sensor_3(sim)!=0:
+				sim.setJointTargetVelocity(l_joint, 0)
+				sim.setJointTargetVelocity(r_joint, 1)
 
-			if detect_distance_sensor_2(sim) < detect_distance_sensor_3(sim):
-				if(detect_distance_sensor_2(sim) !=0 and detect_distance_sensor_3(sim)!=0):
-					sim.setJointTargetVelocity(l_joint, 0)
-					sim.setJointTargetVelocity(r_joint, 1)
-
-			elif detect_distance_sensor_2(sim) > detect_distance_sensor_3(sim):
-				if(detect_distance_sensor_2(sim) !=0 and detect_distance_sensor_3(sim)!=0):
+			elif right_front > right_back and right_back > 0.1479 and right_front !=0 and right_back!=0:
 					sim.setJointTargetVelocity(l_joint, 1)
 					sim.setJointTargetVelocity(r_joint, 0)
-				sim.setJointTargetVelocity(l_joint, 2)
-				sim.setJointTargetVelocity(r_joint, 2)
+			sim.setJointTargetVelocity(l_joint, 5*speed)
+			sim.setJointTargetVelocity(r_joint, 5*speed)
+			if(speed<0.9 and front==0):
+				speed+=0.1
+			elif(speed>0.1 and front!=0):
+				speed-=0.1
 		else:
 			sim.setJointTargetVelocity(l_joint, 0)
 			sim.setJointTargetVelocity(r_joint, 0)
-			time.sleep(1)
+			if(node == 9):
+				sim.setJointTargetVelocity(l_joint, 0)
+				sim.setJointTargetVelocity(r_joint, 0)
+				break
 			if detect_distance_sensor_2(sim)==0 and detect_distance_sensor_3(sim)==0:
-				while(detect_distance_sensor_1(sim)!=0 	and detect_distance_sensor_2(sim)==0 and detect_distance_sensor_3(sim)==0):
-					sim.setJointTargetVelocity(l_joint, 0.2)
-					sim.setJointTargetVelocity(r_joint, -0.2)
+				sim.setJointTargetVelocity(l_joint, 0.5)
+				sim.setJointTargetVelocity(r_joint, -0.5)
+				time.sleep(1.5)
+				while(detect_distance_sensor_1(sim)!=0 or detect_distance_sensor_2(sim)!=detect_distance_sensor_3(sim)):
+					sim.setJointTargetVelocity(l_joint, 0.5)
+					sim.setJointTargetVelocity(r_joint, -0.5)
+				time.sleep(0.9)
+				print("ABE")
 			else:
-				while(detect_distance_sensor_1(sim)!=0 and detect_distance_sensor_2(sim)!=detect_distance_sensor_3(sim)):
-					sim.setJointTargetVelocity(l_joint, -0.2)
-					sim.setJointTargetVelocity(r_joint, 0.2)
-					#time.sleep(0.5)
-					if(detect_distance_sensor_2(sim)==detect_distance_sensor_3(sim)):
-						print("ABE")
+				while(detect_distance_sensor_1(sim)!=0 or round(detect_distance_sensor_2(sim),2)!=round(detect_distance_sensor_3(sim),2)):
+					sim.setJointTargetVelocity(l_joint, -0.5)
+					sim.setJointTargetVelocity(r_joint, 0.5)
+				print("ABE")
+			node = node + 1
 		
 
 	# i = 1
