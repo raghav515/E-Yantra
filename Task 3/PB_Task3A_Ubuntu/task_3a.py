@@ -111,7 +111,6 @@ def detect_paths_to_graph(image):
 	##############	ADD YOUR CODE HERE	##############
 	
 	mono = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-	cv2.imshow('mono', mono)
 	for i in range(0, 6):
 		for j in range(0, 6):
 			nodes = {}
@@ -215,8 +214,35 @@ def path_planning(graph, start, end):
 
 	##############	ADD YOUR CODE HERE	##############
 	
-	##################################################
+	nodes = ['A1','A2','A3','A4','A5','A6','B1','B2','B3','B4','B5','B6','C1','C2','C3','C4','C5','C6','D1','D2','D3','D4','D5','D6','E1','E2','E3','E4','E5','E6','F1','F2','F3','F4','F5','F6']
+	unvisited = nodes.copy()
+	dis = [999 for x in range(0,len(unvisited))]
+	prev_node = ['' for x in range(0,len(unvisited))]
+	dis[unvisited.index(start)] = 0
+	prev_node[unvisited.index(start)] = start
+	cur_node = start
+	while len(unvisited)!=0:
+		for i in graph[cur_node].keys():
+			if i not in unvisited:
+				continue
+			ind = unvisited.index(i)
+			ind_node = nodes.index(i)
+			if dis[unvisited.index(cur_node)]+1 < dis[ind]: 
+				dis[ind] = dis[unvisited.index(cur_node)] + 1
+				prev_node[ind_node] = cur_node
+		dis.remove(dis[unvisited.index(cur_node)])
+		unvisited.remove(cur_node)
+		if len(unvisited)==0:
+			break
+		cur_node = unvisited[dis.index(min(dis))] 
+	cur_node = end
+	while cur_node!=start:
+		backtrace_path.append(cur_node)
+		cur_node = prev_node[nodes.index(cur_node)]
+	backtrace_path.append(start)
+	backtrace_path.reverse()
 
+	##################################################
 
 	return backtrace_path
 
@@ -249,6 +275,53 @@ def paths_to_moves(paths, traffic_signal):
 
 	##############	ADD YOUR CODE HERE	##############
 	
+	orientation = 0
+	for i in range(0,len(paths)-1):
+		if paths[i][0] == paths[i+1][0]:
+			if paths[i][1] > paths[i+1][1]:
+				if orientation == 0:
+					list_moves.append('STRAIGHT')
+				elif orientation == 1:
+					list_moves.append('LEFT')
+				elif orientation == 2:
+					list_moves.append('REVERSE')
+				elif orientation == 3:
+					list_moves.append('RIGHT')
+				orientation = 0
+			elif paths[i][1] < paths[i+1][1]:
+				if orientation == 0:
+					list_moves.append('REVERSE')
+				elif orientation == 1:
+					list_moves.append('RIGHT')
+				elif orientation == 2:
+					list_moves.append('STRAIGHT')
+				elif orientation == 3:
+					list_moves.append('LEFT')
+				orientation = 2
+		elif paths[i][1] == paths[i+1][1]:
+			if paths[i][0] < paths[i+1][0]:
+				if orientation == 0:
+					list_moves.append('RIGHT')
+				elif orientation == 1:
+					list_moves.append('STRAIGHT')
+				elif orientation == 2:
+					list_moves.append('LEFT')
+				elif orientation == 3:
+					list_moves.append('REVERSE')
+				orientation = 1
+			elif paths[i][0] > paths[i+1][0]:
+				if orientation == 0:
+					list_moves.append('LEFT')
+				elif orientation == 1:
+					list_moves.append('REVERSE')
+				elif orientation == 2:
+					list_moves.append('RIGHT')
+				elif orientation == 3:
+					list_moves.append('STRAIGHT')
+				orientation = 3
+		if paths[i+1] in traffic_signal:
+			list_moves.append('WAIT_5')
+
 	##################################################
 
 	return list_moves
